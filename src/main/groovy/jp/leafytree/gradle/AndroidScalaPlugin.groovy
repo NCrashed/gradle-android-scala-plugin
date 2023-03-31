@@ -187,13 +187,12 @@ public class AndroidScalaPlugin implements Plugin<Project> {
 //            def dirSetFactory = new DefaultSourceDirectorySetFactory(fileResolver, new DefaultDirectoryFileTreeFactory())
 //            sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", dirSetFactory)
 //            sourceSet.convention.plugins.scala = objectFactory.newInstance(DefaultScalaSourceSet.class, sourceSet.name + "_AndroidScalaPlugin", objectFactory);
-            
-            def scala = sourceSet.scala
+
+            def scala = sourceSet.getExtensions().getByType(DefaultScalaSourceDirectorySet.class)
 
             scala.filter.include(include);
             def scalaSrcDir = ["src", sourceSet.name, "scala"].join(File.separator)
-            scala.srcDir(scalaSrcDir)
-            sourceSet.getExtensions().getByType(DefaultScalaSourceDirectorySet.class).setSrcDirs(new ArrayList<?>(scalaSrcDir))
+            scala.setSrcDirs(new ArrayList<?>(scalaSrcDir))
             sourceDirectorySetMap[sourceSet.name] = scala
         }
     }
