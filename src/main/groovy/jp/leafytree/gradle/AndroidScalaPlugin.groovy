@@ -26,7 +26,7 @@ import org.gradle.api.internal.file.DefaultSourceDirectorySet
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.model.ObjectFactory
 import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
-import org.gradle.api.internal.tasks.DefaultScalaSourceSet
+import org.gradle.api.internal.tasks.DefaultScalaSourceDirectorySet
 import org.gradle.api.tasks.scala.ScalaCompile
 import org.gradle.api.tasks.scala.ScalaCompileOptions
 import org.gradle.util.ConfigureUtil
@@ -186,14 +186,14 @@ public class AndroidScalaPlugin implements Plugin<Project> {
             sourceSet.java.filter.include(include)
 //            def dirSetFactory = new DefaultSourceDirectorySetFactory(fileResolver, new DefaultDirectoryFileTreeFactory())
 //            sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", dirSetFactory)
-            // sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", objectFactory)
-            sourceSet.convention.plugins.scala = objectFactory.newInstance(DefaultScalaSourceSet.class, sourceSet.name + "_AndroidScalaPlugin", objectFactory);
-
+//            sourceSet.convention.plugins.scala = objectFactory.newInstance(DefaultScalaSourceSet.class, sourceSet.name + "_AndroidScalaPlugin", objectFactory);
+            
             def scala = sourceSet.scala
 
             scala.filter.include(include);
             def scalaSrcDir = ["src", sourceSet.name, "scala"].join(File.separator)
             scala.srcDir(scalaSrcDir)
+            sourceSet.getExtensions().getByType(DefaultScalaSourceDirectorySet.class).setSrcDirs(new ArrayList<?>(scalaSrcDir))
             sourceDirectorySetMap[sourceSet.name] = scala
         }
     }
