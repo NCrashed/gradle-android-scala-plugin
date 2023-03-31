@@ -17,6 +17,7 @@ apply plugin: "java"
 apply plugin: "groovy"
 apply plugin: "signing"
 apply plugin: "idea"
+apply plugin: 'maven-publish'
 
 repositories {
     mavenCentral()
@@ -42,10 +43,28 @@ dependencies {
     testImplementation "junit:junit:4.12"
 }
 
-//sourceCompatibility = JavaVersion.VERSION_1_8
-//targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 def uploadToSonatypeRepository = hasProperty('sonatypeUsername')
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'jp.leafytree.gradle'
+            artifactId = 'gradle-android-scala-plugin'
+            version = "gradle-7.4.2"
+            from components.java
+
+            pom {
+//                name "Gradle Android Scala Plugin"
+                packaging "jar"
+                description project.description
+//                url "https://github.com/saturday06/gradle-android-scala-plugin"
+            }
+        }
+    }
+}
 
 task groovydocJar(type: Jar, dependsOn: groovydoc) {
     from groovydoc.destinationDir
@@ -67,6 +86,6 @@ signing {
     }
 }
 
-task integTest(type: jp.leafytree.gradle.AndroidScalaPluginIntegrationTestTask, dependsOn: "uploadArchives")
-task integrationTest(type: jp.leafytree.gradle.AndroidScalaPluginIntegrationTestTask, dependsOn: "uploadArchives")
+//task integTest(type: jp.leafytree.gradle.AndroidScalaPluginIntegrationTestTask, dependsOn: "uploadArchives")
+//task integrationTest(type: jp.leafytree.gradle.AndroidScalaPluginIntegrationTestTask, dependsOn: "uploadArchives")
 task sample(type: jp.leafytree.gradle.AndroidScalaPluginSampleTask)
