@@ -66,18 +66,18 @@ publishing {
     }
 }
 
-task groovydocJar(type: Jar, dependsOn: groovydoc) {
-    from groovydoc.destinationDir
-}
-
-task sourceJar(type: Jar) {
-    from sourceSets.main.allSource
-}
+//task groovydocJar(type: Jar, dependsOn: groovydoc) {
+//    from groovydoc.destinationDir
+//}
+//
+//task sourceJar(type: Jar) {
+//    from sourceSets.main.allSource
+//}
 
 artifacts {
     archives jar
-    archives groovydocJar
-    archives sourceJar
+//    archives groovydocJar
+//    archives sourceJar
 }
 
 signing {
