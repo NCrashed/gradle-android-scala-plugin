@@ -15,7 +15,6 @@
  */
 apply plugin: "java"
 apply plugin: "groovy"
-apply plugin: "maven"
 apply plugin: "signing"
 apply plugin: "idea"
 
@@ -36,90 +35,24 @@ dependencies {
     implementation localGroovy()
     implementation "commons-io:commons-io:2.6"
     implementation "com.google.guava:guava:23.0"
-    implementation "com.android.tools.build:gradle:3.6.4"
+    implementation "com.android.tools.build:gradle:7.4.2"
 
-    testImplementation "com.android.tools.build:gradle:3.6.4"
+    testImplementation "com.android.tools.build:gradle:7.4.2"
     testImplementation "org.scala-lang:scala-compiler:2.11.12"
     testImplementation "junit:junit:4.12"
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+//sourceCompatibility = JavaVersion.VERSION_1_8
+//targetCompatibility = JavaVersion.VERSION_1_8
 
 def uploadToSonatypeRepository = hasProperty('sonatypeUsername')
 
-/*
-You will need a file gradle.properties in the same folder as this build.gradle.
-In the file you need the following properties:
-sonatypeUsername=<Your username on the Sonatype Nexus website>
-sonatypePassword=<Your password on the Sonatype Nexus website; NOT the PGP password>
-
-signing.keyId=<the short key id (last 8 characters of the long one)>
-signing.password=<the PGP password>
-signing.secretKeyRingFile=<a path the secret key ring file; you can generate it with `gpg --keyring secring.gpg --export-secret-keys`>
-*/
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            if (uploadToSonatypeRepository) {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
-
-                repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-
-                snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                    authentication(userName: sonatypeUsername, password: sonatypePassword)
-                }
-
-                pom.project {
-                    name 'gradle-android-scala-plugin'
-                    packaging 'jar'
-                    groupId 'com.wire'
-                    artifactId 'gradle-android-scala-plugin'
-                    version '2.0.3'
-                    description 'A Scala plugin for the Wire Android app, based on https://github.com/saturday06/gradle-android-scala-plugin'
-                    url 'https://github.com/wireapp/gradle-android-scala-plugin'
-
-                    scm {
-                        connection 'scm:git:git://wireapp/gradle-android-scala-plugin.git'
-                        developerConnection 'scm:git:ssh://wireapp/gradle-android-scala-plugin.git'
-                        url 'http://github.com/wireapp/gradle-android-scala-plugin'
-                    }
-
-                    licenses {
-                        license {
-                            name 'The Apache License, Version 2.0'
-                            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id = 'makingthematrix'
-                            name = 'Maciej Gorywoda'
-                            email = 'maciej.gorywoda@wire.com'
-                        }
-                        developer {
-                            id = 'gizemb'
-                            name = 'Gizem Burhanoglu'
-                            email = 'gizem@wire.com'
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 task groovydocJar(type: Jar, dependsOn: groovydoc) {
     from groovydoc.destinationDir
-    classifier = "javadoc"
 }
 
 task sourceJar(type: Jar) {
     from sourceSets.main.allSource
-    classifier = "sources"
 }
 
 artifacts {

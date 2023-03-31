@@ -22,7 +22,7 @@ import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.file.FileCollection
 import org.gradle.api.file.SourceDirectorySet
-import org.gradle.api.internal.file.DefaultSourceDirectorySetFactory
+import org.gradle.api.internal.file.DefaultSourceDirectorySet
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.model.ObjectFactory
 import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
@@ -186,7 +186,9 @@ public class AndroidScalaPlugin implements Plugin<Project> {
             sourceSet.java.filter.include(include)
 //            def dirSetFactory = new DefaultSourceDirectorySetFactory(fileResolver, new DefaultDirectoryFileTreeFactory())
 //            sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", dirSetFactory)
-            sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", objectFactory)
+            // sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", objectFactory)
+            sourceSet.convention.plugins.scala = objectFactory.newInstance(DefaultScalaSourceSet.class, sourceSet.name + "_AndroidScalaPlugin", objectFactory);
+
             def scala = sourceSet.scala
 
             scala.filter.include(include);
@@ -227,7 +229,7 @@ public class AndroidScalaPlugin implements Plugin<Project> {
         def variantWorkDir = getVariantWorkDir(variant)
         def scalaCompileTask = project.tasks.create("compile${variant.name.capitalize()}Scala", ScalaCompile)
         println(".....scalaCompileTask: " + scalaCompileTask.name)
-        def scalaSources = variant.variantData.variantConfiguration.sortedSourceProviders.inject([]) { acc, val ->
+        def scalaSources = variant.variantData.variantSources.sortedSourceProviders.inject([]) { acc, val ->
             acc + val.java.sourceFiles
         }
         scalaSources.forEach { println("scalaCompileTask source: " + it) }
