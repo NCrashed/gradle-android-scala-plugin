@@ -15,6 +15,7 @@
  */
 package jp.leafytree.gradle
 
+import com.android.build.gradle.internal.variant.BaseVariantData
 import org.apache.commons.io.FileUtils
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.gradle.api.Plugin
@@ -25,6 +26,7 @@ import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.internal.file.DefaultSourceDirectorySet
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.tasks.ScalaSourceDirectorySet
 import org.gradle.internal.impldep.com.google.common.annotations.VisibleForTesting
 import org.gradle.api.internal.tasks.DefaultScalaSourceDirectorySet
 import org.gradle.api.tasks.scala.ScalaCompile
@@ -32,6 +34,7 @@ import org.gradle.api.tasks.scala.ScalaCompileOptions
 import org.gradle.util.ConfigureUtil
 
 import javax.inject.Inject
+import java.lang.reflect.Field
 import java.util.concurrent.atomic.AtomicReference
 /**
  * AndroidScalaPlugin adds scala language support to official gradle android plugin.
@@ -188,11 +191,13 @@ public class AndroidScalaPlugin implements Plugin<Project> {
 //            sourceSet.convention.plugins.scala = new DefaultScalaSourceSet(sourceSet.name + "_AndroidScalaPlugin", dirSetFactory)
 //            sourceSet.convention.plugins.scala = objectFactory.newInstance(DefaultScalaSourceSet.class, sourceSet.name + "_AndroidScalaPlugin", objectFactory);
 
-            def scala = sourceSet.getExtensions().getByType(DefaultScalaSourceDirectorySet.class)
+            org.gradle.api.internal.tasks.DefaultScalaSourceSet scalaSourceSet = objectFactory.newInstance(org.gradle.api.internal.tasks.DefaultScalaSourceSet.class, sourceSet.name + "_AndroidScalaPlugin", objectFactory);
+            sourceSet.getExtensions().add(ScalaSourceDirectorySet.class, "scala", scalaSourceSet.getScala());
+            def scala = sourceSet.scala
 
             scala.filter.include(include);
             def scalaSrcDir = ["src", sourceSet.name, "scala"].join(File.separator)
-            scala.setSrcDirs(new ArrayList<?>(scalaSrcDir))
+            scala.srcDir(scalaSrcDir)
             sourceDirectorySetMap[sourceSet.name] = scala
         }
     }
@@ -228,7 +233,14 @@ public class AndroidScalaPlugin implements Plugin<Project> {
         def variantWorkDir = getVariantWorkDir(variant)
         def scalaCompileTask = project.tasks.create("compile${variant.name.capitalize()}Scala", ScalaCompile)
         println(".....scalaCompileTask: " + scalaCompileTask.name)
-        def scalaSources = variant.variantData.variantSources.sortedSourceProviders.inject([]) { acc, val ->
+//        BaseVariantData variantData = variant.variantData;
+//        Class variantDataClass = variantData.getClass();
+//        Field variantSourcesField = getField(variantDataClass, "variantSources");
+//        variantSourcesField.setAccessible(true); //required if field is not normally accessible
+//        def variantSources = variantSourcesField.get(variantData)
+//        System.out.println("variantSources: " + variantSources);
+
+        def scalaSources = variant.variantData.extraGeneratedSourceFoldersOnlyInModel.inject([]) { acc, val ->
             acc + val.java.sourceFiles
         }
         scalaSources.forEach { println("scalaCompileTask source: " + it) }
@@ -299,5 +311,19 @@ public class AndroidScalaPlugin implements Plugin<Project> {
             project.logger.lifecycle(scalaCompileTask.path)
         }
         javaCompileTask.finalizedBy(scalaCompileTask)
+    }
+
+    private static Field getField(Class clazz, String fieldName)
+            throws NoSuchFieldException {
+        try {
+            return clazz.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            Class superClass = clazz.getSuperclass();
+            if (superClass == null) {
+                throw e;
+            } else {
+                return getField(superClass, fieldName);
+            }
+        }
     }
 }
